@@ -296,20 +296,8 @@ async def handle_message(message: discord.Message) -> None:
                 detected_language = await asyncio.to_thread(detect_language_with_gemini, user_message)
                 user_languages[chat_id] = detected_language
 
-                # If the user is speaking German and word translation is enabled,
-                # try to translate any German words in the message
-                if config.WORD_TRANSLATION_ENABLED and detected_language == "German":
-                    try:
-                        logger.info("User message is in German, checking for words to translate")
-                        # Force translate specific words in the message
-                        words_to_translate = re.findall(r'\b[a-zA-ZäöüßÄÖÜ]{3,}\b', user_message)
-                        if words_to_translate:
-                            logger.info(f"Found {len(words_to_translate)} potential German words to translate")
-                            _, translations = await word_translator.force_translate_words(words_to_translate, "German")
-                            if translations:
-                                logger.info(f"Translated {len(translations)} German words to Turkish")
-                    except Exception as translation_error:
-                        logger.error(f"Error translating German words: {translation_error}")
+                # Word translation is disabled as requested
+                # This section has been removed
 
             elif message.attachments:
                 logger.info(f"Received message with {len(message.attachments)} attachments.")
@@ -478,28 +466,8 @@ async def handle_message(message: discord.Message) -> None:
                     media_analysis=media_analysis # Pass media_analysis here
                 )
 
-            # Check if the response already contains a translation section
-            has_translation_section = "--- Wörterübersetzungen (Kelime Çevirileri) ---" in response
-
-            # Apply word translation after response is fully generated, but only if there's no translation section already
-            if config.WORD_TRANSLATION_ENABLED and detected_language == "German" and not has_translation_section:
-                try:
-                    logger.info("Applying word translation to the fully generated response")
-                    # Translate uncommon words in the response
-                    # Remove any existing translation section first to avoid duplicates
-                    response_text = response.split("--- Wörterübersetzungen")[0].strip()
-
-                    # Translate uncommon words in the clean response text
-                    _, translations = await word_translator.translate_uncommon_words(response, detected_language)
-
-                    # Format translations for inclusion in the response if any were found
-                    if translations:
-                        translation_text = word_translator.format_translations_for_response(translations)
-                        if translation_text:
-                            response = response_text + translation_text
-                            logger.info(f"Added {len(translations)} word translations to the response")
-                except Exception as translation_error:
-                    logger.error(f"Error translating German words: {translation_error}")
+            # Word translation is disabled as requested
+            # This section has been removed
 
             # Split the response into chunks if it's too long
             response_chunks = await split_long_message(response)

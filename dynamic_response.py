@@ -73,94 +73,108 @@ class DynamicResponseManager:
 
     def _adjust_probabilities_for_content(self, probabilities: Dict[str, float], message_content: str) -> None:
         """
-        Adjust probabilities based on the user's message content
+        Adjust probabilities based on the user's message content to favor longer responses
 
         Args:
             probabilities: The current probability distribution
             message_content: The user's message content
         """
-        # Short messages get short responses
+        # Short messages get medium to long responses
         if len(message_content) < 50:
-            probabilities["extremely_short"] *= 2.0  # Significantly increased
-            probabilities["slightly_short"] *= 1.8  # Increased
-            probabilities["medium"] *= 0.8  # Reduced
-            probabilities["slightly_long"] *= 0.5  # Significantly reduced
-            probabilities["long"] *= 0.3  # Greatly reduced
+            probabilities["extremely_short"] *= 0.3  # Significantly reduced
+            probabilities["slightly_short"] *= 0.5  # Reduced
+            probabilities["medium"] *= 1.2  # Increased
+            probabilities["slightly_long"] *= 1.8  # Significantly increased
+            probabilities["long"] *= 1.5  # Increased
 
-        # Medium messages also get short responses
+        # Medium messages get medium to long responses
         elif len(message_content) < 100:
-            probabilities["extremely_short"] *= 1.8  # Increased
-            probabilities["slightly_short"] *= 2.0  # Significantly increased
-            probabilities["medium"] *= 1.0  # No change
-            probabilities["slightly_long"] *= 0.5  # Significantly reduced
-            probabilities["long"] *= 0.3  # Greatly reduced
+            probabilities["extremely_short"] *= 0.3  # Significantly reduced
+            probabilities["slightly_short"] *= 0.5  # Reduced
+            probabilities["medium"] *= 1.5  # Increased
+            probabilities["slightly_long"] *= 2.0  # Significantly increased
+            probabilities["long"] *= 1.8  # Increased
 
-        # Even long, complex messages get short responses
+        # Long, complex messages get detailed long responses
         elif len(message_content) > 200:
-            probabilities["extremely_short"] *= 1.5  # Increased
-            probabilities["slightly_short"] *= 1.8  # Significantly increased
-            probabilities["medium"] *= 1.0  # No change
-            probabilities["slightly_long"] *= 0.5  # Significantly reduced
-            probabilities["long"] *= 0.3  # Greatly reduced
-            # Humans often reply briefly to long messages
-            if random.random() < 0.7:  # High chance of short response
-                probabilities["extremely_short"] *= 2.0  # Boost for extremely short
+            probabilities["extremely_short"] *= 0.1  # Greatly reduced
+            probabilities["slightly_short"] *= 0.2  # Significantly reduced
+            probabilities["medium"] *= 0.8  # Slightly reduced
+            probabilities["slightly_long"] *= 1.5  # Increased
+            probabilities["long"] *= 3.0  # Greatly increased
+            # For complex messages, provide detailed responses
+            if random.random() < 0.7:  # High chance of long response
+                probabilities["long"] *= 2.0  # Boost for long responses
 
-        # Questions also get short responses
+        # Questions get detailed responses
         if "?" in message_content and len(message_content) < 60:
-            # Simple questions get short responses
-            probabilities["extremely_short"] *= 1.5  # Increased extremely short
-            probabilities["slightly_short"] *= 2.0  # Significantly increased
-            probabilities["medium"] *= 0.8  # Reduced medium responses
-            probabilities["slightly_long"] *= 0.5  # Reduced slightly long
-            probabilities["long"] *= 0.3  # Greatly reduced long responses
-        # Complex questions also get short responses
+            # Simple questions get medium responses
+            probabilities["extremely_short"] *= 0.3  # Reduced extremely short
+            probabilities["slightly_short"] *= 0.5  # Reduced short
+            probabilities["medium"] *= 1.5  # Increased medium responses
+            probabilities["slightly_long"] *= 1.8  # Increased slightly long
+            probabilities["long"] *= 1.2  # Increased long responses
+        # Complex questions get detailed responses
         elif "?" in message_content:
-            probabilities["extremely_short"] *= 1.2  # Increased extremely short
-            probabilities["slightly_short"] *= 1.8  # Significantly increased
+            probabilities["extremely_short"] *= 0.2  # Reduced extremely short
+            probabilities["slightly_short"] *= 0.3  # Reduced short
             probabilities["medium"] *= 1.0  # No change
-            probabilities["slightly_long"] *= 0.5  # Reduced slightly long
-            probabilities["long"] *= 0.3  # Greatly reduced long responses
-            # Humans often reply briefly to questions
-            if random.random() < 0.6:  # High chance of short response
-                probabilities["extremely_short"] *= 1.5  # Boost for extremely short
+            probabilities["slightly_long"] *= 2.0  # Significantly increased
+            probabilities["long"] *= 2.5  # Greatly increased
+            # Humans often give detailed answers to complex questions
+            if random.random() < 0.7:  # High chance of detailed response
+                probabilities["long"] *= 1.5  # Boost for long responses
 
-        # Commands or requests get short responses too
-        command_indicators = ["please", "can you", "could you", "would you", "tell me", "show me", "help me"]
+        # Commands or requests get detailed responses
+        command_indicators = ["please", "can you", "could you", "would you", "tell me", "show me", "help me", "explain"]
         if any(indicator in message_content.lower() for indicator in command_indicators):
-            probabilities["extremely_short"] *= 1.2  # Increased extremely short
-            probabilities["slightly_short"] *= 1.8  # Significantly increased
+            probabilities["extremely_short"] *= 0.2  # Reduced extremely short
+            probabilities["slightly_short"] *= 0.3  # Reduced short
             probabilities["medium"] *= 1.0  # No change
-            probabilities["slightly_long"] *= 0.5  # Reduced slightly long
-            probabilities["long"] *= 0.3  # Greatly reduced long responses
+            probabilities["slightly_long"] *= 2.0  # Significantly increased
+            probabilities["long"] *= 2.5  # Greatly increased
 
-        # Greetings get very short responses
+        # Only greetings get shorter responses
         greeting_indicators = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "what's up", "sup", "yo"]
         if any(message_content.lower().startswith(greeting) for greeting in greeting_indicators):
-            probabilities["extremely_short"] *= 3.0  # Greatly increased
+            # But still not extremely short
+            probabilities["extremely_short"] *= 1.0  # No change
             probabilities["slightly_short"] *= 1.5  # Increased
-            probabilities["medium"] *= 0.5  # Reduced
-            probabilities["slightly_long"] *= 0.2  # Greatly reduced
-            probabilities["long"] *= 0.1  # Almost eliminated
+            probabilities["medium"] *= 1.2  # Slightly increased
+            probabilities["slightly_long"] *= 0.8  # Slightly reduced
+            probabilities["long"] *= 0.5  # Reduced
 
     def _adjust_probabilities_for_context(self, probabilities: Dict[str, float], context: Dict[str, Any]) -> None:
         """
-        Adjust probabilities based on conversation context
+        Adjust probabilities based on conversation context to favor longer responses
 
         Args:
             probabilities: The current probability distribution
             context: Context information about the conversation
         """
-        # If this is the first message in a conversation, tend toward medium or slightly long
+        # If this is the first message in a conversation, provide a detailed introduction
         if context.get("is_first_message", False):
-            probabilities["medium"] *= 1.5
-            probabilities["slightly_long"] *= 1.3
-            probabilities["extremely_short"] *= 0.5
+            probabilities["extremely_short"] *= 0.1  # Greatly reduced
+            probabilities["slightly_short"] *= 0.3  # Significantly reduced
+            probabilities["medium"] *= 1.0  # No change
+            probabilities["slightly_long"] *= 2.0  # Significantly increased
+            probabilities["long"] *= 3.0  # Greatly increased
 
-        # If the conversation has been going on for a while, vary more
+        # If the conversation has been going on for a while, provide more detailed responses
         if context.get("message_count", 0) > 5:
-            probabilities["extremely_short"] *= 1.2
-            probabilities["long"] *= 1.2
+            probabilities["extremely_short"] *= 0.3  # Reduced
+            probabilities["slightly_short"] *= 0.5  # Reduced
+            probabilities["medium"] *= 1.0  # No change
+            probabilities["slightly_long"] *= 1.5  # Increased
+            probabilities["long"] *= 2.0  # Significantly increased
+
+        # If there's media, provide detailed descriptions
+        if context.get("has_media", False):
+            probabilities["extremely_short"] *= 0.1  # Greatly reduced
+            probabilities["slightly_short"] *= 0.2  # Significantly reduced
+            probabilities["medium"] *= 0.5  # Reduced
+            probabilities["slightly_long"] *= 1.5  # Increased
+            probabilities["long"] *= 3.0  # Greatly increased
 
     def _adjust_probabilities_for_variety(self, probabilities: Dict[str, float]) -> None:
         """
@@ -289,20 +303,20 @@ class DynamicResponseManager:
         Returns:
             Instructions for the model to generate a response of the appropriate length
         """
-        # Yanıt türüne göre farklı talimatlar ver, daha kısa ve insan gibi yanıtlar için
+        # Yanıt türüne göre farklı talimatlar ver, daha uzun ve insan gibi yanıtlar için
         if response_type == "extremely_short":
-            return "Yanıtını AŞIRI KISA tut - sadece birkaç kelime veya tek bir kısa cümle. Hızlıca mesajlaşan bir insan gibi minimal çabayla yanıt ver. Çok kısa ve öz ol. Mesajlaşma uygulamasında hızlıca cevap veren biri gibi davran."
+            return "Yanıtını KISA tut - 1-2 cümle. Gerçek bir insan gibi doğal bir şekilde yanıt ver. Temel bilgileri içer. Mesajlaşma uygulamasında doğal bir şekilde cevap veren biri gibi davran."
         elif response_type == "slightly_short":
-            return "Yanıtını KISA tut - 1-2 cümle. Minimal açıklama ile mesajlaşan bir insan gibi yanıt ver. Sadece temel bilgileri ver. Kısa ve öz konuş. Gerçek bir insan gibi, gereksiz detayları atla."
+            return "Yanıtını BİRAZ KISA tut - 2-3 cümle. Doğal bir şekilde mesajlaşan bir insan gibi yanıt ver. Temel bilgileri ve birkaç detay ver. Doğal ve akıcı konuş. Gerçek bir insan gibi, konuyu açıkla."
         elif response_type == "medium":
-            return "ORTA UZUNLUKTA bir yanıt ver - 2-3 cümle. Temel bilgileri ver. Normal bir sohbette konuşan biri gibi davran. Gereksiz tekrarlardan kaçın ve konuyu kısaca açıkla."
+            return "ORTA UZUNLUKTA bir yanıt ver - 3-5 cümle. Detaylı bilgiler ver. Normal bir sohbette konuşan biri gibi davran. Konuyu açıkla ve örnekler ver. Doğal bir akışla yanıt ver."
         elif response_type == "slightly_long":
-            return "BİRAZ UZUN bir yanıt ver - 3-4 cümle. Temel bilgileri ve birkaç detay ver. Konuyu kısaca açıkla. Gereksiz uzatmadan yanıt ver."
+            return "BİRAZ UZUN bir yanıt ver - 5-7 cümle. Detaylı bilgiler ve açıklamalar ver. Konuyu derinlemesine açıkla. Örnekler ve karşılaştırmalar kullan. Doğal bir insan gibi, akıcı ve bağlantılı cümleler kur."
         elif response_type == "long":
-            return "UZUN bir yanıt ver - 4-5 cümle. Konuyu açıkla ama gereksiz detaylara girme. Kısa ve öz bir şekilde bilgi ver."
+            return "UZUN ve DETAYLI bir yanıt ver - 7-10 cümle. Konuyu kapsamlı bir şekilde açıkla. Detaylı bilgiler, örnekler ve açıklamalar ver. Farklı bakış açıları sun. Doğal bir insan gibi, akıcı ve bağlantılı paragraflar oluştur. Konuyu derinlemesine ele al."
         else:
-            # Default instruction - kısa ve insan gibi
-            return "Tamamen doğal bir insan gibi yanıt ver. Mesaj uzunluğunu önceden planlamadan, doğal şekilde belirle. Genellikle kısa yanıtlar ver. Gerçek bir insan gibi, konuyu kısaca açıkla. Mesajlaşma uygulamasında sohbet eden biri gibi davran, uzun ve detaylı yanıtlardan kaçın."
+            # Default instruction - doğal ve insan gibi
+            return "Tamamen doğal bir insan gibi yanıt ver. Mesaj uzunluğunu önceden planlamadan, doğal şekilde belirle. Detaylı ve kapsamlı yanıtlar ver. Gerçek bir insan gibi, konuyu derinlemesine açıkla. Normal bir sohbette konuşan biri gibi davran, doğal ve akıcı bir dil kullan."
 
     def get_language_level(self, message_content: str, context: Optional[Dict[str, Any]] = None) -> str:
         """
@@ -353,15 +367,14 @@ class DynamicResponseManager:
         else:
             self.consecutive_same_level_count = 0
 
-        # Update last language level
         self.last_language_level = selected_level
 
-        logger.debug(f"Using {selected_level} language level for natural German communication")
+        logger.debug(f"Using {selected_level} language level for natural human-like communication")
         return selected_level
 
     def _adjust_language_probabilities_for_content(self, probabilities: Dict[str, float], message_content: str) -> None:
         """
-        Adjust language level probabilities based on the user's message content
+        Adjust probabilities based on the user's message content
 
         Args:
             probabilities: The current probability distribution
@@ -412,18 +425,13 @@ class DynamicResponseManager:
         if random.random() < 0.1:
             # Reset all adjustments and boost a random level
             for level in probabilities:
-                probabilities[level] = config.A1_LANGUAGE_PROBABILITY if level == "A1" else \
-                                      config.A2_LANGUAGE_PROBABILITY if level == "A2" else \
-                                      config.B1_LANGUAGE_PROBABILITY if level == "B1" else \
-                                      config.B2_LANGUAGE_PROBABILITY if level == "B2" else \
-                                      config.C1_LANGUAGE_PROBABILITY if level == "C1" else \
-                                      config.C2_LANGUAGE_PROBABILITY
+                probabilities[level] = getattr(config, f"{level}_LANGUAGE_PROBABILITY")
 
             # Boost a random level
             random_level = random.choice(list(probabilities.keys()))
             probabilities[random_level] *= 3.0
 
-        # Greetings almost always get simple responses
+        # Greetings often get simple responses
         greeting_indicators = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "what's up", "sup", "yo"]
         if any(message_content.lower().startswith(greeting) for greeting in greeting_indicators):
             probabilities["A1"] *= 3.0
@@ -513,7 +521,7 @@ class DynamicResponseManager:
 
     def _adjust_language_probabilities_for_context(self, probabilities: Dict[str, float], context: Dict[str, Any]) -> None:
         """
-        Adjust language level probabilities based on conversation context
+        Adjust probabilities based on conversation context
 
         Args:
             probabilities: The current probability distribution
@@ -673,10 +681,10 @@ class DynamicResponseManager:
         instructions = self.get_response_length_instructions(response_type)
 
         return f"""
-        KISA VE İNSAN GİBİ YANIT UZUNLUĞU TALİMATI:
+        UZUN VE İNSAN GİBİ YANIT UZUNLUĞU TALİMATI:
         {instructions}
 
-        ÇOK ÖNEMLİ: Mesaj uzunluğunu tamamen doğal ve insan gibi belirle. Genellikle kısa yanıtlar ver. Gerçek bir insan gibi, konuyu kısaca açıkla. Mesajlaşma uygulamasında sohbet eden gerçek bir insan gibi davran. Uzun ve detaylı yanıtlardan kaçın. Kısa ve öz cevaplar ver. Gereksiz detayları atla. Çok uzun yanıtlardan kesinlikle kaçın. Maksimum 2-3 cümle kullan. Uzun paragraflar yazma. Kısa ve net ol.
+        ÇOK ÖNEMLİ: Mesaj uzunluğunu tamamen doğal ve insan gibi belirle. Detaylı ve kapsamlı yanıtlar ver. Gerçek bir insan gibi, konuyu derinlemesine açıkla. Normal bir sohbette konuşan biri gibi davran, doğal ve akıcı bir dil kullan. Konuyu tam olarak anlatmak için yeterli uzunlukta cevaplar ver. Örnekler ve açıklamalar ekle. Birden fazla paragraf kullanmaktan çekinme. Konuyu farklı açılardan ele al. Detaylı ve bilgilendirici ol. Kısa ve yetersiz yanıtlardan kaçın. En az 5-7 cümle kullan. Akıcı ve bağlantılı paragraflar oluştur.
         """
 
     def format_language_level_for_prompt(self, message_content: str, context: Optional[Dict[str, Any]] = None) -> str:

@@ -45,11 +45,11 @@ SELF_AWARENESS_SEARCH_ENABLED = os.getenv("SELF_AWARENESS_SEARCH_ENABLED", "true
 # Level of detail for environmental awareness (1-5)
 ENVIRONMENT_AWARENESS_LEVEL = int(os.getenv("ENVIRONMENT_AWARENESS_LEVEL", "3"))
 
-# Word translation settings - ENABLED for German to Turkish
-WORD_TRANSLATION_ENABLED = True
-# Default language for translation is German
+# Word translation settings - DISABLED as requested
+WORD_TRANSLATION_ENABLED = False
+# Default language for translation is German (kept for backward compatibility)
 DEFAULT_TRANSLATION_LANGUAGE = "German"
-# Translate words with A2 level and above
+# Translate words with A2 level and above (kept for backward compatibility)
 MIN_CEFR_LEVEL_FOR_TRANSLATION = "A2"
 # These settings are kept for backward compatibility but are not used
 MIN_WORD_LENGTH_FOR_TRANSLATION = int(os.getenv("MIN_WORD_LENGTH_FOR_TRANSLATION", "4"))
@@ -59,14 +59,14 @@ MAX_WORDS_TO_TRANSLATE = int(os.getenv("MAX_WORDS_TO_TRANSLATE", "5"))
 DYNAMIC_MESSAGE_LENGTH_ENABLED = True
 # Probability distribution for different response lengths
 # These values determine the approximate probability of each response type
-# Daha kısa ve insan gibi yanıt dağılımı - kısa yanıtlar için daha yüksek olasılık
-EXTREMELY_SHORT_RESPONSE_PROBABILITY = 0.30  # Çok kısa yanıtlar için yüksek olasılık
-SLIGHTLY_SHORT_RESPONSE_PROBABILITY = 0.40  # Kısa yanıtlar için en yüksek olasılık
-MEDIUM_RESPONSE_PROBABILITY = 0.20  # Orta uzunlukta yanıtlar için düşük olasılık
-SLIGHTLY_LONG_RESPONSE_PROBABILITY = 0.07  # Biraz uzun yanıtlar için çok düşük olasılık
-LONG_RESPONSE_PROBABILITY = 0.03  # Uzun yanıtlar için minimum olasılık
+# Daha uzun ve insan gibi yanıt dağılımı - uzun yanıtlar için daha yüksek olasılık
+EXTREMELY_SHORT_RESPONSE_PROBABILITY = 0.05  # Çok kısa yanıtlar için düşük olasılık
+SLIGHTLY_SHORT_RESPONSE_PROBABILITY = 0.10  # Kısa yanıtlar için düşük olasılık
+MEDIUM_RESPONSE_PROBABILITY = 0.25  # Orta uzunlukta yanıtlar için orta olasılık
+SLIGHTLY_LONG_RESPONSE_PROBABILITY = 0.35  # Biraz uzun yanıtlar için yüksek olasılık
+LONG_RESPONSE_PROBABILITY = 0.25  # Uzun yanıtlar için yüksek olasılık
 # Randomness factor for response length (0.0-1.0, higher = more random)
-RESPONSE_LENGTH_RANDOMNESS = 1.0  # Tam rastgelelik için 1.0 değeri
+RESPONSE_LENGTH_RANDOMNESS = 0.7  # Doğal insan yanıtları için orta seviye rastgelelik
 
 # Slang and casual language settings
 SLANG_ENABLED = True  # Always enable slang and casual language
@@ -75,18 +75,18 @@ SLANG_PROBABILITY = 1.0  # Maximum probability for natural slang usage
 # Maximum level of slang/swearing (1-5, where 5 is most casual/explicit)
 SLANG_LEVEL = 5  # Maximum level for natural casual/explicit language
 
-# Dynamic language level settings - Enabled with natural human-like distribution
+# Dynamic language level settings - Enabled with completely natural human-like distribution
 DYNAMIC_LANGUAGE_LEVEL_ENABLED = True
 # Probability distribution for different language levels (A1-C2)
-# Natural distribution with emphasis on A1-B1 but allowing all levels for variety
-A1_LANGUAGE_PROBABILITY = 0.35  # Primary focus on simple language
-A2_LANGUAGE_PROBABILITY = 0.25  # Secondary focus on elementary language
-B1_LANGUAGE_PROBABILITY = 0.20  # Some intermediate language
-B2_LANGUAGE_PROBABILITY = 0.10  # Occasional upper-intermediate language
-C1_LANGUAGE_PROBABILITY = 0.07  # Rare advanced language
-C2_LANGUAGE_PROBABILITY = 0.03  # Very rare proficient language
-# Randomness factor for language level (0.0-1.0, higher = more random)
-LANGUAGE_LEVEL_RANDOMNESS = 1.0  # Maximum randomness for unpredictable human-like variation
+# Natural distribution like a real human - varies based on context and content
+A1_LANGUAGE_PROBABILITY = 0.15  # Simple language
+A2_LANGUAGE_PROBABILITY = 0.15  # Elementary language
+B1_LANGUAGE_PROBABILITY = 0.20  # Intermediate language
+B2_LANGUAGE_PROBABILITY = 0.20  # Upper-intermediate language
+C1_LANGUAGE_PROBABILITY = 0.15  # Advanced language
+C2_LANGUAGE_PROBABILITY = 0.15  # Proficient language
+# Randomness factor for language level (maximum for unpredictable human-like variation)
+LANGUAGE_LEVEL_RANDOMNESS = 1.0  # Maximum randomness for natural human-like unpredictability
 
 # Self-reflection settings - DISABLED
 SELF_REFLECTION_ENABLED = False
